@@ -83,10 +83,8 @@ def get_billboard():
         title = info.find(class_ ='chart-row__song')
         artist = info.find(class_ ='chart-row__artist')
         billboard_dict[counter] = [title.string,artist.string]
-        # print(str(counter) + '. ' + ''.join(billboard_dict[counter]))
         counter += 1
     return(billboard_dict)
-
 
 
 # Gets top ten tracks for given artist
@@ -98,14 +96,10 @@ def get_top_tracks(artist):
         top_tracks_list = []
         for track in top_tracks_us['tracks'][:10]:
             top_tracks_list.append(track['name'])
-        # counter = 1
-        # for x in top_tracks_list:
-        #     print(str(counter) + '. ' + str(x))
-        #     counter +=1
         return top_tracks_list
 
 
-
+# Gets top ten tracks and billboard data
 def chart_compare(artist):
     billboard = get_billboard()
     billboard_songs = []
@@ -138,14 +132,33 @@ def chart_compare(artist):
         counter +=1
 
 
+# Interface
+def load_help_text():
+    with open('help.txt') as f:
+        return f.read()
+
+def interactive_prompt():
+    help_text = load_help_text()
+    print('Type "help" to see more detailed instructions.')
+    response = ''
+    response = input('Enter any artist to retrieve their top 10 songs from')
+    response += ('Spotify. If a song is currently charting on the Billboard Hot 100)
+    response += (', its position on the chart will also be displayed. Enter here: ')
+    while response != 'quit':
+        response = input('Enter an artist: ')
+        if response == 'help':
+            print(help_text)
+        chart_compare(response)
 
 
-chart_compare(artist = 'Drake')
 
-        # elif x.strip('(feat. ' + artist + ')') in billboard_songs and artist in billboard_artists[billboard_songs.index(x)]:
-        #         print(artist + ' - ' + str(counter) + '. ' + x +
-        #         ' charting at number ' + str(billboard_songs.index(x)+ 1) +
-        #         ' on The Billboard Hot 100')
+
+
+
+
+# chart_compare(artist = 'Drake')
+
+
 
 # Example Cache Population
 # x = ''
