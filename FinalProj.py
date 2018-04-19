@@ -23,7 +23,7 @@ except:
     SPOTIFY_CACHED_DICT = {}
 
 def get_data_using_cache(field='artist:',artistName = 'Radiohead',
-    return_type='track'):
+    return_type='artist'):
     search_dict = spotify.search(q=field + str(artistName),
     type=return_type)
     keys = []
@@ -90,13 +90,13 @@ def get_billboard():
 # Gets top ten tracks for given artist
 def get_top_tracks(artist):
         data = get_data_using_cache(artistName = artist)
-        artist_id = data['tracks']['items'][0]['artists'][0]['id']
+        artist_id = data['artists']['items'][0]['uri']
         uri = 'spotify:artist:' + str(artist_id)
         top_tracks_us = spotify.artist_top_tracks(uri)
         top_tracks_list = []
         for track in top_tracks_us['tracks'][:10]:
             top_tracks_list.append(track['name'])
-        return top_tracks_list
+        return(top_tracks_list)
 
 
 # Gets top ten tracks and billboard data
@@ -141,15 +141,85 @@ def interactive_prompt():
     help_text = load_help_text()
     print('Type "help" to see more detailed instructions.')
     response = ''
-    response = input('Enter any artist to retrieve their top 10 songs from')
-    response += ('Spotify. If a song is currently charting on the Billboard Hot 100)
-    response += (', its position on the chart will also be displayed. Enter here: ')
-    while response != 'quit':
-        response = input('Enter an artist: ')
+    while response != 'quit' or 'help':
+        response = input('Enter any artist to retrieve their top 10 songs from Spotify.\nIf a song is currently charting on the Billboard Hot 100,\nits position on the chart will also be displayed.\nEnter here: ')
         if response == 'help':
+            print('----------------------------')
             print(help_text)
-        chart_compare(response)
+            print('----------------------------')
+        elif response == 'quit':
+            break
+        else:
+            chart_compare(response)
 
+        # else:
+        #     print('Command not recognized:', response)
+        #     print('Type "help" to see a list of commands and instructions.')
+
+
+
+
+interactive_prompt()
+
+#Create database
+# DBNAME = 'spotifybillboard.db'
+# CHARTJSON = 'cached_chart.json'
+# MUSICJSON = 'cached_music.json'
+#
+# def init_db():
+#     conn = sqlite.connect(DBNAME)
+#     cur = conn.cursor()
+#
+#     statement = '''
+#         DROP TABLE IF EXISTS 'Artist_Data';
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#
+#     statement = '''
+#         DROP TABLE IF EXISTS 'Chart_Data';
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#
+#     statement = '''
+#         CREATE TABLE 'Artist_Data' (
+#             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+#             'Company' TEXT,
+#             'SpecificBeanBarName' TEXT,
+#             'REF' TEXT,
+#             'ReviewDate' TEXT,
+#             'CocoaPercent' REAL,
+#             'CompanyLocation' TEXT,
+#             'CompanyLocationId' INTEGER,
+#             'Rating' REAL,
+#             'BeanType' TEXT,
+#             'BroadBeanOrigin' TEXT,
+#             'BroadBeanOriginId' INTEGER
+#         );
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#
+#     statement = '''
+#         CREATE TABLE 'Chart_Data' (
+#             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+#             'Alpha2' TEXT,
+#             'Alpha3' TEXT,
+#             'EnglishName' INTEGER,
+#             'Region' TEXT,
+#             'Subregion' REAL,
+#             'Population' INTEGER,
+#             'Area' REAL
+#         );
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#     conn.close()
 
 
 

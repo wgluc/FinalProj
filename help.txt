@@ -9,4 +9,4 @@ that search results would contain that particular result, but would be catered m
 the similarities between the query and the artist, as opposed to the query and other tracks.
 For this reason, it is best to restrict searches to artists.
 
-To quit the program, simply press quit.
+To quit the program, simply type 'quit'.
