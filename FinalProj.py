@@ -30,7 +30,7 @@ def get_data_using_cache(field='artist:',artistName = 'Radiohead',
     for i in search_dict.keys():
         keys.append(i)
     if artistName in keys:
-        return SPOTIFY_CACHED_DICT[key]
+        return SPOTIFY_CACHED_DICT[artistName]
     else:
         response = spotify.search(q=field + str(artistName),
         type=return_type)
@@ -46,18 +46,18 @@ def get_data_using_cache(field='artist:',artistName = 'Radiohead',
 CACHE_FNAME2 = 'cached_chart.json'
 try:
     cache_file1 = open(CACHE_FNAME2, 'r')
-    cache_contents1 = cache_file.read()
-    CHART_CACHE_DICT = json.loads(cache_contents)
+    cache_contents1 = cache_file1.read()
+    CHART_CACHE_DICT = json.loads(cache_contents1)
     cache_file1.close()
 except:
     CHART_CACHE_DICT = {}
 
 def get_chart_using_cache(baseurl):
     unique_indent = baseurl
-    if baseurl in CHART_CACHE_DICT:
-        return CHART_CACHE_DICT[baseurl]
+    if unique_indent in CHART_CACHE_DICT.keys():
+        return CHART_CACHE_DICT[unique_indent]
     else:
-        response = requests.get(baseurl)
+        response = requests.get(unique_indent)
         CHART_CACHE_DICT[unique_indent] = response.text
         fref = open('cached_chart.json', 'w')
         dumped_data = json.dumps(CHART_CACHE_DICT)
@@ -69,34 +69,72 @@ def get_chart_using_cache(baseurl):
 #Function to scrape billboard charts
 def get_billboard():
     url = 'https://www.billboard.com/charts/hot-100'
-    html = get_chart_using_cache(url)
+    html = get_chart_using_cache(baseurl = url)
     soup = BeautifulSoup(html, 'html.parser')
     container = soup.find(class_ = 'chart-data js-chart-data')
     main_dis = container.find_all(class_ = 'chart-row__main-display')
+    more_info = container.find(class_ = 'container')
+    more_stats = more_info.find_all(class_ = 'chart-row__secondary')
+    #.find_all(class_ = '')[1]
     billboard_dict = {}
     counter = 1
     for cell in main_dis:
         number_cont = cell.find(class_='chart-row__rank')
-        number = number_cont.find(class_='chart-row__current-week')
+        position = number_cont.find(class_='chart-row__current-week')
         title_cont = cell.find(class_= 'chart-row__container')
         info = title_cont.find(class_= 'chart-row__title')
         title = info.find(class_ ='chart-row__song')
         artist = info.find(class_ ='chart-row__artist')
-        billboard_dict[counter] = [title.string,artist.string]
+        artist = artist.string.replace('\n', '')
+        billboard_dict[counter] = [title.string,artist]
+        counter += 1
+    counter = 1
+    for cell in more_stats:
+        inside_stats = cell.find(class_ = 'chart-row__stats')
+        peak = inside_stats.find(class_ = 'chart-row__top-spot')
+        peak_value = peak.find(class_ = 'chart-row__value')
+        week = inside_stats.find(class_ = 'chart-row__weeks-on-chart')
+        week_value = week.find(class_ = 'chart-row__value')
+        prev_week = inside_stats.find(class_ = 'chart-row__last-week')
+        prev_week_value = prev_week.find(class_ = 'chart-row__value')
+        billboard_dict[counter].append(peak_value.string)
+        billboard_dict[counter].append(week_value.string)
+        billboard_dict[counter].append(prev_week_value.string)
         counter += 1
     return(billboard_dict)
+
+class BillboardArtistData():
+    def __init__(self, songName = 'Creep', artistName = 'Radiohead',current = 0,
+    peak = 0, weeks = 0, previous = 0):
+        self.songName = songName
+        self.artistName = artistName
+        self.current = current
+        self.peak = peak
+        self.weeks = weeks
+        self.previous = previous
+
+
+    def __str__(self):
+        return '{} by {} is currently charting at number {}. Throughout its {} week(s) charting, its top position was {}, and its last position was {}'.format(
+        self.songName,self.artistName, self.current, self.weeks, self.peak,
+        self.previous)
+
 
 
 # Gets top ten tracks for given artist
 def get_top_tracks(artist):
         data = get_data_using_cache(artistName = artist)
-        artist_id = data['artists']['items'][0]['uri']
-        uri = 'spotify:artist:' + str(artist_id)
-        top_tracks_us = spotify.artist_top_tracks(uri)
-        top_tracks_list = []
-        for track in top_tracks_us['tracks'][:10]:
-            top_tracks_list.append(track['name'])
-        return(top_tracks_list)
+        try:
+            artist_id = data['artists']['items'][0]['uri']
+            uri = 'spotify:artist:' + str(artist_id)
+            top_tracks_us = spotify.artist_top_tracks(uri)
+            top_tracks_list = []
+            for track in top_tracks_us['tracks'][:10]:
+                top_tracks_list.append(track['name'])
+            return(top_tracks_list)
+        except:
+            print('Invalid search request')
+            return None
 
 
 # Gets top ten tracks and billboard data
@@ -111,25 +149,31 @@ def chart_compare(artist):
     for x in billboard.keys():
         billboard_artists.append(billboard[x][1])
     artists_string = '\n'.join(billboard_artists)
-    compare_tracks = get_top_tracks(artist)
-    counter = 1
-    for x in compare_tracks:
-        artist_split = x.split(' (')
-        if len(artist_split) > 1:
-            feature_split = artist_split[-1].split()
-            if len(feature_split) > 1:
-                feature = ''.join(feature_split[-1:])[:-1]
-        if x in songs_string:
-            print(artist + ' - ' + str(counter) + '. ' + x +
-            ': charting at number '+ str(billboard_songs.index(x) + 1) +
-            ' on The Billboard Hot 100')
-        elif x.split(' (')[0] in songs_string and feature in artists_string:
-            print(artist + ' - ' + str(counter) + '. ' + x +
-            ' charting at number '+ str(billboard_songs.index(x.split(' (')[0])
-            + 1) + ' on The Billboard Hot 100')
-        else:
-            print(artist + ' - ' + str(counter) + '. ' + x + ', not charting')
-        counter +=1
+    try:
+        compare_tracks = get_top_tracks(artist)
+
+        counter = 1
+        for x in compare_tracks:
+            artist_split = x.split(' (')
+            if len(artist_split) > 1:
+                feature_split = artist_split[-1].split()
+                if len(feature_split) > 1:
+                    feature = ''.join(feature_split[-1:])[:-1]
+            if x in songs_string:
+                print(artist + ' - ' + str(counter) + '. ' + x +
+                ': charting at number '+ str(billboard_songs.index(x) + 1) +
+                ' on The Billboard Hot 100')
+            elif x.split(' (')[0] in songs_string and feature in artists_string:
+                print(artist + ' - ' + str(counter) + '. ' + x +
+                ' charting at number '+ str(billboard_songs.index(x.split(' (')[0])
+                + 1) + ' on The Billboard Hot 100')
+            else:
+                print(artist + ' - ' + str(counter) + '. ' + x + ', not charting')
+            counter +=1
+    except:
+        print('**********ERROR**********')
+        print('There is an issue with your artist. Please avoid using special characters, make sure your search is case sensitive, and make sure it is spelled correctly.\n')
+        print('**********ERROR**********')
 
 
 # Interface
@@ -152,91 +196,8 @@ def interactive_prompt():
         else:
             chart_compare(response)
 
-        # else:
-        #     print('Command not recognized:', response)
-        #     print('Type "help" to see a list of commands and instructions.')
 
-
-
-
-interactive_prompt()
-
-#Create database
-# DBNAME = 'spotifybillboard.db'
-# CHARTJSON = 'cached_chart.json'
-# MUSICJSON = 'cached_music.json'
-#
-# def init_db():
-#     conn = sqlite.connect(DBNAME)
-#     cur = conn.cursor()
-#
-#     statement = '''
-#         DROP TABLE IF EXISTS 'Artist_Data';
-#     '''
-#
-#     cur.execute(statement)
-#     conn.commit()
-#
-#     statement = '''
-#         DROP TABLE IF EXISTS 'Chart_Data';
-#     '''
-#
-#     cur.execute(statement)
-#     conn.commit()
-#
-#     statement = '''
-#         CREATE TABLE 'Artist_Data' (
-#             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
-#             'Company' TEXT,
-#             'SpecificBeanBarName' TEXT,
-#             'REF' TEXT,
-#             'ReviewDate' TEXT,
-#             'CocoaPercent' REAL,
-#             'CompanyLocation' TEXT,
-#             'CompanyLocationId' INTEGER,
-#             'Rating' REAL,
-#             'BeanType' TEXT,
-#             'BroadBeanOrigin' TEXT,
-#             'BroadBeanOriginId' INTEGER
-#         );
-#     '''
-#
-#     cur.execute(statement)
-#     conn.commit()
-#
-#     statement = '''
-#         CREATE TABLE 'Chart_Data' (
-#             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
-#             'Alpha2' TEXT,
-#             'Alpha3' TEXT,
-#             'EnglishName' INTEGER,
-#             'Region' TEXT,
-#             'Subregion' REAL,
-#             'Population' INTEGER,
-#             'Area' REAL
-#         );
-#     '''
-#
-#     cur.execute(statement)
-#     conn.commit()
-#     conn.close()
-
-
-
-
-
-
-# chart_compare(artist = 'Drake')
-
-
-
-# Example Cache Population
-# x = ''
-# while x != 'quit':
-#     x = str(input('What artist would you like to search?'))
-#     results = get_data_using_cache(artistName = x)
-#     print(results)
-
+print(get_billboard())
 
 
 
