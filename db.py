@@ -39,10 +39,10 @@ def init_db():
 
     statement = '''
         CREATE TABLE 'Chart_Data' (
-            'Position' INTEGER PRIMARY KEY AUTOINCREMENT,
-            'Peak Position' INTEGER,
-            'Previous Position' INTEGER,
-            'Weeks Charting' INTEGER,
+            'Position' TEXT,
+            'Peak Position' TEXT,
+            'Previous Position' TEXT,
+            'Weeks Charting' TEXT,
             'Artist' TEXT,
             'Song' TEXT,
         );
@@ -52,13 +52,11 @@ def init_db():
     conn.commit()
     conn.close()
 
-def populate_chart():
+def populate_db():
     conn = sqlite3.connect('spotifybillboard.db')
     cur = conn.cursor()
 
     populate_dict = get_billboard()
-    chart_dict = {}
-    count = 1
 
     for c in populate_dict.keys():
         Position = c
@@ -68,26 +66,33 @@ def populate_chart():
         Artist = populate_dict.keys[c][1]
         Song = populate_dict.keys[c][0]
 
-        insertion = (None, Position, Previous_Position, Weeks_Charting, Artist,
-        Song)
+        insertion = (Position, Peak_Position, Previous_Position, Weeks_Charting,
+        Artist,Song)
         statement = 'INSERT INTO "CHART_DATA" '
-        statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        statement += 'VALUES (?, ?, ?, ?, ?, ?)'
         cur.execute(statement, insertion)
     conn.commit()
 
     f = open(MUSICJSON, 'r')
     fcontents = f.read()
     music_data = json.loads(fcontents)
-    music_dict = {}
-    counter = 1
 
+    for x in music_data.keys:
+        Artist = x
+        Best_Song = get_top_tracks(x)[0]
+        Followers = music_data[x]['artists']['items'][0]['followers']['total']
+        Genres = ''.join(music_data[x][]['artists']['items'][0]['genres'])
+        Popularity = music_data[x]['artists']['items'][0]['popularity']
+        Type = music_data[x]['artists']['items'][0]['type']
+        uri = music_data[x]['artists']['items'][0]['uri']
 
-
-        insertion = (None, line[0], line[1], line[2], line[3], line[4][:-1],
-        line[5], locId, line[6], line[7], line[8], beanid)
-        statement = 'INSERT INTO "Bars" '
-        statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        insertion = (None, Artist, Best_Song, Followers, Genres, Popularity,
+        Type, uri)
+        statement = 'INSERT INTO "Artist_Data" '
+        statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         cur.execute(statement, insertion)
-
     conn.commit()
     conn.close()
+
+init_db()
+populate_db()
