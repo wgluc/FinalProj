@@ -1,0 +1,6 @@
+requests==2.3.0
+bs4
+json
+sqlite3
+Spotipy
+plotly

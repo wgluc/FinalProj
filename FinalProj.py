@@ -3,9 +3,13 @@ import secrets
 import spotipy.util as util
 import json
 from bs4 import BeautifulSoup
-import sys
 import requests
 import sqlite3 as sqlite
+import plotly
+import plotly.plotly as py
+import plotly.graph_objs as go
+plotly.tools.set_credentials_file(username='wgluc', api_key='XBTn9XbLJRW5K365kcbq')
+
 
 #Oauth2 Set Up
 token = util.oauth2.SpotifyClientCredentials(client_id=secrets.client_id,
@@ -103,6 +107,8 @@ def get_billboard():
         counter += 1
     return(billboard_dict)
 
+
+#Class for creating Artist objects according to Billboard
 class BillboardArtistData():
     def __init__(self, songName = 'Creep', artistName = 'Radiohead',current = 0,
     peak = 0, weeks = 0, previous = 0):
@@ -113,13 +119,11 @@ class BillboardArtistData():
         self.weeks = weeks
         self.previous = previous
 
-
-
-
     def __str__(self):
         return '{} by {} is currently charting at number {}. Throughout its {} week(s) charting, its top position was {}, and its last position was {}'.format(
         self.songName,self.artistName, self.current, self.weeks, self.peak,
         self.previous)
+
 
 # Gets top ten tracks for given artist
 def get_top_tracks(artist):
@@ -175,131 +179,119 @@ def chart_compare(artist):
         print('**********ERROR**********')
 
 
-# f = open('cached_music.json', 'r')
-# fcontents = f.read()
-# music_data = json.loads(fcontents)
+# print(get_billboard())
+
+#CREATING DB
+
+# DBNAME = 'spotifybillboard.db'
+# CHARTJSON = 'cached_chart.json'
+# MUSICJSON = 'cached_music.json'
 #
-# for x in music_data.keys():
-#     # print(music_data[x]['artists']['items'][0]['genres'])
-#     genre_list = music_data[x]['artists']['items'][0]['genres']
-#     genre_string = ''
-#     for y in genre_list:
-#         genre_string += y + ', '
-#     print(genre_string)
-#     break
-#     # Genres = ''.join(music_data[x]['artists']['items'][0]['genres'])
-
-
-
-DBNAME = 'spotifybillboard.db'
-CHARTJSON = 'cached_chart.json'
-MUSICJSON = 'cached_music.json'
-
-def init_db():
-    conn = sqlite.connect(DBNAME)
-    cur = conn.cursor()
-
-    statement = '''
-        DROP TABLE IF EXISTS 'Artist_Data';
-    '''
-
-    cur.execute(statement)
-    conn.commit()
-
-    statement = '''
-        DROP TABLE IF EXISTS 'Chart_Data';
-    '''
-
-    cur.execute(statement)
-    conn.commit()
-
-    statement = '''
-        CREATE TABLE 'Artist_Data' (
-            'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
-            'Artist' TEXT,
-            'Best Song' TEXT,
-            'Followers' TEXT,
-            'Genres' TEXT,
-            'Popularity' INTEGER,
-            'Type' TEXT,
-            'uri' TEXT
-        );
-    '''
-
-    cur.execute(statement)
-    conn.commit()
-
-    statement = '''
-        CREATE TABLE 'Chart_Data' (
-            'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
-            'Position' TEXT,
-            'Peak Position' TEXT,
-            'Previous Position' TEXT,
-            'Weeks Charting' TEXT,
-            'Artist' TEXT,
-            'Song' TEXT
-        );
-    '''
-
-    cur.execute(statement)
-    conn.commit()
-    conn.close()
-
-def populate_db():
-    conn = sqlite.connect('spotifybillboard.db')
-    cur = conn.cursor()
-
-    populate_dict = get_billboard()
-
-    for c in populate_dict.keys():
-        Position = c
-        Peak_Position = populate_dict[c][2]
-        Previous_Position = populate_dict[c][4]
-        Weeks_Charting = populate_dict[c][3]
-        Artist = populate_dict[c][1]
-        Song = populate_dict[c][0]
-
-        insertion = (None, Position, Peak_Position, Previous_Position, Weeks_Charting,
-        Artist, Song)
-        statement = 'INSERT INTO "CHART_DATA" '
-        statement += 'VALUES (?, ?, ?, ?, ?, ?, ?)'
-        cur.execute(statement, insertion)
-    conn.commit()
-
-    f = open(MUSICJSON, 'r')
-    fcontents = f.read()
-    music_data = json.loads(fcontents)
-
-    for x in music_data.keys():
-        Artist = x
-        Best_Song = get_top_tracks(x)[0]
-        Followers = music_data[x]['artists']['items'][0]['followers']['total']
-        genre_list = music_data[x]['artists']['items'][0]['genres']
-        genre_string = ''
-        for y in genre_list:
-            genre_string += y + ', '
-        Genres = genre_string
-        Popularity = music_data[x]['artists']['items'][0]['popularity']
-        Type = music_data[x]['artists']['items'][0]['type']
-        uri = music_data[x]['artists']['items'][0]['uri']
-
-        insertion = (None, Artist, Best_Song, Followers, Genres, Popularity,
-        Type, uri)
-        statement = 'INSERT INTO "Artist_Data" '
-        statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        cur.execute(statement, insertion)
-    conn.commit()
-
-    conn.close()
-
-init_db()
-populate_db()
+# def init_db():
+#     conn = sqlite.connect(DBNAME)
+#     cur = conn.cursor()
+#
+#     statement = '''
+#         DROP TABLE IF EXISTS 'Artist_Data';
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#
+#     statement = '''
+#         DROP TABLE IF EXISTS 'Chart_Data';
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#
+#     statement = '''
+#         CREATE TABLE 'Artist_Data' (
+#             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+#             'Artist' TEXT,
+#             'Best Song' TEXT,
+#             'Followers' TEXT,
+#             'Genres' TEXT,
+#             'Popularity' INTEGER,
+#             'Type' TEXT,
+#             'uri' TEXT
+#         );
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#
+#     statement = '''
+#         CREATE TABLE 'Chart_Data' (
+#             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
+#             'Position' TEXT,
+#             'Peak Position' TEXT,
+#             'Previous Position' TEXT,
+#             'Weeks Charting' TEXT,
+#             'Artist' TEXT,
+#             'Song' TEXT
+#         );
+#     '''
+#
+#     cur.execute(statement)
+#     conn.commit()
+#     conn.close()
+#
+# def populate_db():
+#     conn = sqlite.connect('spotifybillboard.db')
+#     cur = conn.cursor()
+#
+#     populate_dict = get_billboard()
+#
+#     for c in populate_dict.keys():
+#         Position = c
+#         Peak_Position = populate_dict[c][2]
+#         Previous_Position = populate_dict[c][4]
+#         Weeks_Charting = populate_dict[c][3]
+#         Artist = populate_dict[c][1]
+#         Song = populate_dict[c][0]
+#
+#         insertion = (None, Position, Peak_Position, Previous_Position, Weeks_Charting,
+#         Artist, Song)
+#         statement = 'INSERT INTO "CHART_DATA" '
+#         statement += 'VALUES (?, ?, ?, ?, ?, ?, ?)'
+#         cur.execute(statement, insertion)
+#     conn.commit()
+#
+#     f = open(MUSICJSON, 'r')
+#     fcontents = f.read()
+#     music_data = json.loads(fcontents)
+#
+#     for x in music_data.keys():
+#         Artist = x
+#         Best_Song = get_top_tracks(x)[0]
+#         Followers = music_data[x]['artists']['items'][0]['followers']['total']
+#         genre_list = music_data[x]['artists']['items'][0]['genres']
+#         genre_string = ''
+#         for y in genre_list:
+#             genre_string += y + ', '
+#         Genres = genre_string
+#         Popularity = music_data[x]['artists']['items'][0]['popularity']
+#         Type = music_data[x]['artists']['items'][0]['type']
+#         uri = music_data[x]['artists']['items'][0]['uri']
+#
+#         insertion = (None, Artist, Best_Song, Followers, Genres, Popularity,
+#         Type, uri)
+#         statement = 'INSERT INTO "Artist_Data" '
+#         statement += 'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+#         cur.execute(statement, insertion)
+#     conn.commit()
+#
+#     conn.close()
+#
+# init_db()
+# populate_db()
 
 
 # Interface
-def load_help_text():
-    with open('help.txt') as f:
-        return f.read()
+# def load_help_text():
+#     with open('help.txt') as f:
+#         return f.read()
 #
 # def interactive_prompt():
 #     help_text = load_help_text()
@@ -316,6 +308,129 @@ def load_help_text():
 #         else:
 #             chart_compare(response)
 # interactive_prompt()
+
+# plotly
+def create_plot_one():
+    pos_lst = []
+    prev_lst = []
+    billboard = get_billboard()
+    for spot in billboard.keys():
+        try:
+            prev_lst.append(int(billboard[spot][4]))
+        except:
+            prev_lst.append(0)
+        pos_lst.append(int(spot))
+    trace0 = go.Scatter(x = pos_lst, y = prev_lst, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = 'Billboard Previous Position on Current Position',
+                  yaxis = dict(zeroline = False),
+                  xaxis = dict(zeroline = False)
+                 )
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot1')
+
+def create_plot_two():
+    pos_lst = []
+    weeks_lst = []
+    billboard = get_billboard()
+    for spot in billboard.keys():
+        pos_lst.append(int(spot))
+        weeks_lst.append(int(billboard[spot][3]))
+    trace0 = go.Scatter(x = pos_lst, y = weeks_lst, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = 'Billboard Weeks on Current Position',
+                  yaxis = dict(zeroline = False),
+                  xaxis = dict(zeroline = False)
+                 )
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot2')
+
+def create_plot_three():
+    peak_lst = []
+    weeks_lst = []
+    billboard = get_billboard()
+    for spot in billboard.keys():
+        peak_lst.append(int(billboard[spot][2]))
+        weeks_lst.append(int(billboard[spot][3]))
+    trace0 = go.Scatter(x = peak_lst, y = weeks_lst, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = 'Billboard Weeks Charting on Peak Position',
+                  yaxis = dict(zeroline = False),
+                  xaxis = dict(zeroline = False)
+                 )
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot3')
+
+def create_plot_four():
+    f = open('cached_music.json', 'r')
+    fcontents = f.read()
+    music_data = json.loads(fcontents)
+    followers_list = []
+    pop_list = []
+    for spot in music_data.keys():
+        pop_list.append(music_data[spot]['artists']['items'][0]['popularity'])
+        followers_list.append(music_data[spot]['artists']['items'][0]['followers']['total'])
+    p_four = 'Spotify Artist Popularity on Artist Followers (from Cached Results)'
+    trace0 = go.Scatter(x = followers_list, y = pop_list, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = p_four,
+                  yaxis = dict(zeroline = False),
+                  xaxis = dict(zeroline = False)
+                 )
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot4')
+
+create_plot_one()
+create_plot_two()
+create_plot_three()
+create_plot_four()
+# create_plot_two()
+# def create_plot2():
+#     billboard = get_billboard()
+#     data = []
+
+#         data.append(trace0)
+#
+#     py.plot(data, filename='Billboard Current Position on Weeks Charting')
+#
+# def create_plot3():
+#     f = open('cached_music.json', 'r')
+#     fcontents = f.read()
+#     music_data = json.loads(fcontents)
+#     billboard = get_billboard()
+#     num = 0
+#     pop = 0
+#     data = []
+#     for x in billboard.keys():
+#         num = int(x)
+#         for y in music.data.keys():
+#             pop = int(music_data[y]['artists']['items'][0]['popularity'])
+#         trace = go.Scatter(x = num, y = pop)
+#         data.append(trace)
+#     f = 'Billboard Current Position on Spotify Popularity Score'
+#     py.plot(data, filename= f)
+
+# create_plot_one()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # cache_list = ['Young Thug', 'Migos', 'Kanye West', 'Demi Lovato',
 # 'A Tribe Called Quest', 'Lil Uzi Vert', 'Post Malone', 'Tom Misch',
