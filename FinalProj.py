@@ -110,8 +110,8 @@ def get_billboard():
 
 #Class for creating Artist objects according to Billboard
 class BillboardArtistData():
-    def __init__(self, songName = 'Creep', artistName = 'Radiohead',current = 0,
-    peak = 0, weeks = 0, previous = 0):
+    def __init__(self, songName = 'Creep', artistName = 'Radiohead',current = '0',
+    peak = '0', weeks = '0', previous = '0'):
         self.songName = songName
         self.artistName = artistName
         self.current = current
@@ -177,6 +177,17 @@ def chart_compare(artist):
         print('**********ERROR**********')
         print('There is an issue with your artist. Please avoid using special characters, make sure your search is case sensitive, and make sure it is spelled correctly.\n')
         print('**********ERROR**********')
+
+
+obj_billboard = get_billboard()
+counter = 1
+obj_list = []
+for x in obj_billboard.keys():
+    counter = BillboardArtistData(obj_billboard[x][0], obj_billboard[x][1], x, obj_billboard[x][2], obj_billboard[x][3], obj_billboard[x][4])
+    print('-------------')
+    # print(counter)
+    obj_list.append(counter)
+
 
 
 # print(get_billboard())
@@ -419,55 +430,7 @@ def interactive_prompt():
 
 
 
-interactive_prompt()
-# create_plot_two()
-# def create_plot2():
-#     billboard = get_billboard()
-#     data = []
-
-#         data.append(trace0)
-#
-#     py.plot(data, filename='Billboard Current Position on Weeks Charting')
-#
-# def create_plot3():
-#     f = open('cached_music.json', 'r')
-#     fcontents = f.read()
-#     music_data = json.loads(fcontents)
-#     billboard = get_billboard()
-#     num = 0
-#     pop = 0
-#     data = []
-#     for x in billboard.keys():
-#         num = int(x)
-#         for y in music.data.keys():
-#             pop = int(music_data[y]['artists']['items'][0]['popularity'])
-#         trace = go.Scatter(x = num, y = pop)
-#         data.append(trace)
-#     f = 'Billboard Current Position on Spotify Popularity Score'
-#     py.plot(data, filename= f)
-
-# create_plot_one()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Populate List
 # cache_list = ['Young Thug', 'Migos', 'Kanye West', 'Demi Lovato',
 # 'A Tribe Called Quest', 'Lil Uzi Vert', 'Post Malone', 'Tom Misch',
 # 'The Beatles', 'Chief Keef', 'Glass Animals', 'Fugees', 'Michael Jackson',
@@ -489,12 +452,13 @@ interactive_prompt()
 # 'Solange', 'Louis The Child', 'Lauv', 'Skepta']
 #
 #
+# Populate DB
 # for x in cache_list:
 #     chart_compare(x)
 
 
 
-
+# Authorized requests
 # spot_list['external urls']['name']
 # Part1 Oauth page server requests
 # baseurl = 'https://api.spotify.com'
@@ -503,3 +467,13 @@ interactive_prompt()
 # token = util.oauth2.SpotifyClientCredentials(client_id= secrets.client_id, client_secret= secrets.client_secret)
 # cache_token = token.get_access_token()
 # spotify = spotipy.Spotify(cache_token)
+
+
+# if __name__ == "__main__":
+#     unittest.main(verbosity=2)
+#
+# if __name__== "__main__":
+#     unittest.main()
+#
+# if __name__== "__main__":
+#     interactive_prompt()

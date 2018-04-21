@@ -1,8 +1,9 @@
 Welcome to my program!
 
-The only command needed to use this program is typing in artist's names.
+The commands needed to use this program are an artist's names, and numbers
+to prompt different functions. Artist searches are the first function.
 These searches are case sensitive, and are ran through a python library connected
-to Spotify.
+to Spotify. The second function is typing in numbers for plotly graphs.
 
 The base of the queries is set to 'artists', so if a user enters a song, its possible
 that search results would contain that particular result, but would be catered more to
@@ -10,6 +11,8 @@ the similarities between the query and the artist, as opposed to the query and o
 For this reason, it is best to restrict searches to artists.
 
 In order to have the program work as intended, try to avoid special characters,
-check spelling, and make sure your search is case sensitive. 
+check spelling, and make sure your search is case sensitive.
+
+To call help, simply type 'help.'
 
 To quit the program, simply type 'quit'.
