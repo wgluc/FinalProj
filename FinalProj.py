@@ -120,7 +120,7 @@ class BillboardArtistData():
         self.previous = previous
 
     def __str__(self):
-        return '{} by {} is currently charting at number {}. Throughout its {} week(s) charting, its top position was {}, and its last position was {}'.format(
+        return '{} by {} is currently charting at number {}. Throughout its {} week(s) charting, its top position was {}, and its last position was {}.'.format(
         self.songName,self.artistName, self.current, self.weeks, self.peak,
         self.previous)
 
@@ -180,13 +180,12 @@ def chart_compare(artist):
 
 
 obj_billboard = get_billboard()
-counter = 1
 obj_list = []
 for x in obj_billboard.keys():
     counter = BillboardArtistData(obj_billboard[x][0], obj_billboard[x][1], x, obj_billboard[x][2], obj_billboard[x][3], obj_billboard[x][4])
-    print('-------------')
-    # print(counter)
+    print(type(counter))
     obj_list.append(counter)
+
 
 
 
@@ -472,8 +471,8 @@ def interactive_prompt():
 # if __name__ == "__main__":
 #     unittest.main(verbosity=2)
 #
-# if __name__== "__main__":
-#     unittest.main()
+if __name__== "__main__":
+    unittest.main()
 #
 # if __name__== "__main__":
 #     interactive_prompt()
