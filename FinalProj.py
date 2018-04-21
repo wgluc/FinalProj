@@ -468,11 +468,8 @@ def interactive_prompt():
 # spotify = spotipy.Spotify(cache_token)
 
 
-# if __name__ == "__main__":
-#     unittest.main(verbosity=2)
-#
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+
 if __name__== "__main__":
-    unittest.main()
-#
-# if __name__== "__main__":
-#     interactive_prompt()
+    interactive_prompt()
