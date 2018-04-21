@@ -288,27 +288,6 @@ def chart_compare(artist):
 # populate_db()
 
 
-# Interface
-# def load_help_text():
-#     with open('help.txt') as f:
-#         return f.read()
-#
-# def interactive_prompt():
-#     help_text = load_help_text()
-#     print('Type "help" to see more detailed instructions.')
-#     response = ''
-#     while response != 'quit' or 'help':
-#         response = input('Enter any artist to retrieve their top 10 songs from Spotify.\nIf a song is currently charting on the Billboard Hot 100,\nits position on the chart will also be displayed.\nEnter here: ')
-#         if response == 'help':
-#             print('----------------------------')
-#             print(help_text)
-#             print('----------------------------')
-#         elif response == 'quit':
-#             break
-#         else:
-#             chart_compare(response)
-# interactive_prompt()
-
 # plotly
 def create_plot_one():
     pos_lst = []
@@ -380,10 +359,67 @@ def create_plot_four():
     fig = dict(data=data, layout=layout)
     plot_url = py.plot(fig, filename='Plot4')
 
-create_plot_one()
-create_plot_two()
-create_plot_three()
-create_plot_four()
+
+# Interface
+def load_help_text():
+    with open('help.txt') as f:
+        return f.read()
+
+def interactive_prompt():
+    txt = 'Enter any artist to retrieve their top 10 songs from Spotify.\nIf a song is currently charting on the Billboard Hot 100,\nits position on the chart will also be displayed.\nEnter here: '
+    help_text = load_help_text()
+    print('Type "help" to see more detailed instructions.')
+    choice = ''
+    while choice != 'quit' or 'help':
+        choice = input('Enter "1" to make artist searches into the Spotify Library\nEnter "2" to view sample graphs from plotly:\n')
+        if choice == 'quit':
+            break
+        elif int(choice) == 1:
+            response = input('You have selected to make searches.' + txt)
+            while response != 'quit' or 'help':
+                chart_compare(response)
+                response = input(txt)
+                if response == 'help':
+                    print('----------------------------')
+                    print(help_text)
+                    print('----------------------------')
+                elif response == 'quit':
+                    break
+                else:
+                    chart_compare(response)
+        elif int(choice) == 2:
+            print('Enter 1 for "Billboard Previous Position on Current Position" Scatterplot')
+            print('Enter 2 for "Billboard Weeks on Current Position" Scatterplot')
+            print('Enter 3 for "Billboard Weeks Charting on Peak Position" Scatterplot')
+            print('Enter 4 for "Spotify Artist Popularity on Artist Followers"(from Cached Results)" Scatterplot')
+            plot_response = input('Enter a number : ')
+            while(plot_response != 'quit'):
+                if plot_response == 'quit':
+                    break
+                elif int(plot_response) == 1:
+                    create_plot_one()
+                elif int(plot_response) == 2:
+                    create_plot_two()
+                elif int(plot_response) == 3:
+                    create_plot_three()
+                elif int(plot_response) == 4:
+                    create_plot_four()
+                elif plot_response == 'help':
+                    print(help_text)
+                else:
+                    print('INVALID INPUT ******** Please type "help" or try again.')
+                plot_response = input('Enter a number: ')
+        elif choice == 'quit':
+            break
+        elif choice == 'help':
+            print(help_text)
+        else:
+            print('Please be more prudent in your inputs and searches.' + help_text)
+
+
+
+
+interactive_prompt()
 # create_plot_two()
 # def create_plot2():
 #     billboard = get_billboard()
